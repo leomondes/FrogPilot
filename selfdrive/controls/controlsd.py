@@ -1007,7 +1007,13 @@ class Controls:
         self.max_acceleration = 0
 
       conversion = 1 if self.is_metric else CV.KPH_TO_MPH
-      v_cruise = max(self.v_cruise_helper.v_cruise_cluster_kph, self.v_cruise_helper.v_cruise_kph) * conversion
+      v_cruise_cluster = self.v_cruise_helper.v_cruise_cluster_kph * conversion
+      v_cruise_base = self.v_cruise_helper.v_cruise_kph * conversion
+      v_cruise = max(v_cruise_cluster, v_cruise_base)
+
+      print(f"v_cruise_cluster: {v_cruise_cluster}")
+      print(f"v_cruise_base: {v_cruise_base}")
+      print(f"v_cruise: {v_cruise}")
 
       if 70 > v_cruise >= 69:
         if self.sm.frame % 25 == 0:

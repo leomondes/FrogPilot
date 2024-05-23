@@ -391,17 +391,6 @@ FrogPilotControlsPanel::FrogPilotControlsPanel(SettingsWindow *parent) : FrogPil
           tr("I understand the risks."), this);
         }
       });
-    } else if (param == "AggressiveAcceleration") {
-      std::vector<QString> accelerationToggles{"AggressiveAccelerationExperimental"};
-      std::vector<QString> accelerationToggleNames{tr("Experimental")};
-      toggle = new FrogPilotParamToggleControl(param, title, desc, icon, accelerationToggles, accelerationToggleNames);
-      QObject::connect(static_cast<FrogPilotParamToggleControl*>(toggle), &FrogPilotParamToggleControl::buttonClicked, [this](bool checked) {
-        if (checked) {
-          FrogPilotConfirmationDialog::toggleAlert(
-          tr("WARNING: This is very experimental and may cause the car to not brake or stop safely! Please report any issues in the FrogPilot Discord!"),
-          tr("I understand the risks."), this);
-        }
-      });
     } else if (param == "DecelerationProfile") {
       std::vector<QString> profileOptions{tr("Standard"), tr("Eco"), tr("Sport")};
       FrogPilotButtonParamControl *profileSelection = new FrogPilotButtonParamControl(param, title, desc, icon, profileOptions);
@@ -410,17 +399,6 @@ FrogPilotControlsPanel::FrogPilotControlsPanel(SettingsWindow *parent) : FrogPil
       toggle = new FrogPilotParamValueControl(param, title, desc, icon, 0, 10, std::map<int, QString>(), this, false, tr(" feet"));
     } else if (param == "LeadDetectionThreshold") {
       toggle = new FrogPilotParamValueControl(param, title, desc, icon, 1, 99, std::map<int, QString>(), this, false, "%");
-    } else if (param == "SmoothBraking") {
-      std::vector<QString> brakingToggles{"SmoothBrakingJerk", "SmoothBrakingFarLead"};
-      std::vector<QString> brakingToggleNames{tr("Apply to Jerk"), tr("Far Lead Offset")};
-      toggle = new FrogPilotParamToggleControl(param, title, desc, icon, brakingToggles, brakingToggleNames);
-      QObject::connect(static_cast<FrogPilotParamToggleControl*>(toggle), &FrogPilotParamToggleControl::buttonClicked, [this](bool checked) {
-        if (checked) {
-          FrogPilotConfirmationDialog::toggleAlert(
-          tr("WARNING: This is very experimental and may cause the car to not brake or stop safely! Please report any issues in the FrogPilot Discord!"),
-          tr("I understand the risks."), this);
-        }
-      });
 
     } else if (param == "MTSCEnabled") {
       FrogPilotParamManageControl *mtscToggle = new FrogPilotParamManageControl(param, title, desc, icon, this);

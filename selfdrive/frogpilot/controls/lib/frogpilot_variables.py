@@ -159,13 +159,10 @@ class FrogPilotVariables:
     longitudinal_tune = openpilot_longitudinal and self.params.get_bool("LongitudinalTune")
     toggles.acceleration_profile = self.params.get_int("AccelerationProfile") if longitudinal_tune else 0
     toggles.aggressive_acceleration = longitudinal_tune and self.params.get_bool("AggressiveAcceleration")
-    toggles.aggressive_acceleration_experimental = toggles.aggressive_acceleration and self.params.get_bool("AggressiveAccelerationExperimental")
     toggles.deceleration_profile = self.params.get_int("DecelerationProfile") if longitudinal_tune else 0
     toggles.increased_stopping_distance = self.params.get_int("StoppingDistance") * distance_conversion if longitudinal_tune else 0
     toggles.lead_detection_threshold = self.params.get_int("LeadDetectionThreshold") / 100 if longitudinal_tune else 0.5
     toggles.smoother_braking = longitudinal_tune and self.params.get_bool("SmoothBraking")
-    toggles.smoother_braking_far_lead = toggles.smoother_braking and self.params.get_bool("SmoothBrakingFarLead")
-    toggles.smoother_braking_jerk = toggles.smoother_braking and self.params.get_bool("SmoothBrakingJerk")
     toggles.sport_plus = longitudinal_tune and toggles.acceleration_profile == 3
     toggles.traffic_mode = longitudinal_tune and self.params.get_bool("TrafficMode")
 

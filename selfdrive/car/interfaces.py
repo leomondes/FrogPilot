@@ -32,6 +32,7 @@ ACCEL_MAX_PLUS = 4.0
 ACCEL_MIN = -3.5
 FRICTION_THRESHOLD = 0.3
 
+NEURAL_PARAMS_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/neural_ff_weights.json')
 TORQUE_PARAMS_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/params.toml')
 TORQUE_OVERRIDE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/override.toml')
 TORQUE_SUBSTITUTE_PATH = os.path.join(BASEDIR, 'selfdrive/car/torque_data/substitute.toml')
@@ -229,14 +230,10 @@ class CarInterfaceBase(ABC):
     return self.lat_torque_nn_model.evaluate(x)
 
   def check_comma_nn_ff_support(self, car):
-    try:
-      with open("../car/torque_data/neural_ff_weights.json", "r") as file:
-        data = json.load(file)
-      return car in data
+    with open(NEURAL_PARAMS_PATH, 'r') as file:
+      data = json.load(file)
+    return car in data
 
-    except FileNotFoundError:
-      print("Failed to open neural_ff_weights file.")
-      return False
 
   def initialize_lat_torque_nn(self, car, eps_firmware):
     self.lat_torque_nn_model, _ = get_nn_model(car, eps_firmware)

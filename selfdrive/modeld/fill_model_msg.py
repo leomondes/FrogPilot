@@ -44,7 +44,7 @@ def fill_xyvat(builder, t, x, y, v, a, x_std=None, y_std=None, v_std=None, a_std
 def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, np.ndarray], publish_state: PublishState,
                    vipc_frame_id: int, vipc_frame_id_extra: int, frame_id: int, frame_drop: float,
                    timestamp_eof: int, timestamp_llk: int, model_execution_time: float,
-                   nav_enabled: bool, valid: bool) -> None:
+                   nav_enabled: bool, valid: bool, frogpilotPlan: capnp._DynamicStructReader) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   msg.valid = valid
 
@@ -99,25 +99,14 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
     lane_line = modelV2.laneLines[i]
     if i < 4:
       fill_xyzt(lane_line, PLAN_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0], net_output_data['lane_lines'][0,i,:,1])
+    elif i == 4:
+      lane_x = net_output_data['lane_lines'][0,1,:,0]
+      new_lane_x = lane_x - frogpilotPlan.laneWidthLeft / 2
+      fill_xyzt(lane_line, PLAN_T_IDXS, np.array(ModelConstants.X_IDXS), new_lane_x, net_output_data['lane_lines'][0,1,:,1])
     else:
-      far_lane, near_lane, road_edge = (0, 1, 0) if i == 4 else (3, 2, 1)
-
-      near_lane_x = net_output_data['lane_lines'][0,near_lane,:,0]
-      road_edge_x = net_output_data['lane_lines'][0,road_edge,:,0]
-      far_lane_x = net_output_data['lane_lines'][0,far_lane,:,0]
-
-      road_edge_distance = abs(np.linalg.norm(road_edge_x - near_lane_x))
-      far_lane_distance = abs(np.linalg.norm(far_lane_x - near_lane_x))
-
-      if road_edge_distance < far_lane_distance:
-        closest_lane_x = road_edge_x
-      else:
-        closest_lane_x = far_lane_x
-
-      diff_x = closest_lane_x - near_lane_x
-      new_lane_x = near_lane_x + diff_x / 2
-
-      fill_xyzt(lane_line, PLAN_T_IDXS, np.array(ModelConstants.X_IDXS), new_lane_x, net_output_data['lane_lines'][0,near_lane,:,1])
+      lane_x = net_output_data['lane_lines'][0,2,:,0]
+      new_lane_x = lane_x + frogpilotPlan.laneWidthRight / 2
+      fill_xyzt(lane_line, PLAN_T_IDXS, np.array(ModelConstants.X_IDXS), new_lane_x, net_output_data['lane_lines'][0,2,:,1])
 
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()

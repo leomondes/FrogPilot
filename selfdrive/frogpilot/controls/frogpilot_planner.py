@@ -86,6 +86,7 @@ class FrogPilotPlanner:
 
     v_cruise_kph = min(controlsState.vCruise, V_CRUISE_UNSET)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    v_cruise += max(carState.vEgoCluster - carState.vEgoRaw, 0)
     v_cruise_changed = (self.mtsc_target or self.vtsc_target) < v_cruise
 
     v_ego = max(carState.vEgo, 0)
@@ -210,12 +211,6 @@ class FrogPilotPlanner:
   def update_v_cruise(self, carState, controlsState, frogpilotCarState, frogpilotNavigation, liveLocationKalman, modelData, v_cruise, v_ego, frogpilot_toggles):
     gps_check = (liveLocationKalman.status == log.LiveLocationKalman.Status.valid) and liveLocationKalman.positionGeodetic.valid and liveLocationKalman.gpsOK
 
-    v_cruise_cluster = max(controlsState.vCruiseCluster, controlsState.vCruise) * CV.KPH_TO_MS
-    v_cruise_diff = v_cruise_cluster - v_cruise
-
-    v_ego_cluster = max(carState.vEgoCluster, v_ego)
-    v_ego_diff = v_ego_cluster - v_ego
-
     # Pfeiferj's Map Turn Speed Controller
     if frogpilot_toggles.map_turn_speed_controller and v_ego > CRUISING_SPEED and controlsState.enabled and gps_check:
       mtsc_active = self.mtsc_target < v_cruise
@@ -245,10 +240,10 @@ class FrogPilotPlanner:
       if self.override_slc:
         if frogpilot_toggles.speed_limit_controller_override == 1:
           if carState.gasPressed:
-            self.overridden_speed = v_ego + v_ego_diff
-          self.overridden_speed = np.clip(self.overridden_speed, self.slc_target, v_cruise + v_cruise_diff)
+            self.overridden_speed = v_ego
+          self.overridden_speed = np.clip(self.overridden_speed, self.slc_target, v_cruise)
         elif frogpilot_toggles.speed_limit_controller_override == 2:
-          self.overridden_speed = v_cruise + v_cruise_diff
+          self.overridden_speed = v_cruise
       else:
         self.overridden_speed = 0
     else:
@@ -264,7 +259,7 @@ class FrogPilotPlanner:
     else:
       self.vtsc_target = v_cruise if v_cruise != V_CRUISE_UNSET else 0
 
-    targets = [self.mtsc_target, max(self.overridden_speed, self.slc_target) - v_ego_diff, self.vtsc_target]
+    targets = [self.mtsc_target, max(self.overridden_speed, self.slc_target), self.vtsc_target]
     filtered_targets = [target if target > CRUISING_SPEED else v_cruise for target in targets]
 
     return min(filtered_targets)

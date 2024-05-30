@@ -707,8 +707,9 @@ class Controls:
           else:
             steering_value = actuators.steer
 
-          left_deviation = steering_value > 0 and dpath_points[0] < -0.20
-          right_deviation = steering_value < 0 and dpath_points[0] > 0.20
+          # too many steering alert changin lane, reduced dpath_points and added torque check
+          left_deviation = steering_value > 0 and dpath_points[0] < -0.12 and abs(CS.steeringTorqueEps) >= 49
+          right_deviation = steering_value < 0 and dpath_points[0] > 0.12 and abs(CS.steeringTorqueEps) >= 49
 
           if left_deviation or right_deviation:
             self.events.add(EventName.steerSaturated)

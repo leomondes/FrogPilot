@@ -18,6 +18,7 @@
 #include "safety/safety_volkswagen_pq.h"
 #include "safety/safety_elm327.h"
 #include "safety/safety_body.h"
+#include "safety/safety_volvo.h"
 
 // CAN-FD only safety modes
 #ifdef CANFD
@@ -51,6 +52,7 @@
 #define SAFETY_FAW 26U
 #define SAFETY_BODY 27U
 #define SAFETY_HYUNDAI_CANFD 28U
+#define SAFETY_VOLVO 32U
 
 uint16_t current_safety_mode = SAFETY_SILENT;
 uint16_t current_safety_param = 0;
@@ -319,6 +321,7 @@ const safety_hook_config safety_hook_registry[] = {
   {SAFETY_TESLA, &tesla_hooks},
   {SAFETY_SUBARU_PREGLOBAL, &subaru_preglobal_hooks},
   {SAFETY_VOLKSWAGEN_PQ, &volkswagen_pq_hooks},
+  {SAFETY_VOLVO, &volvo_hooks},
   {SAFETY_ALLOUTPUT, &alloutput_hooks},
 #endif
 };

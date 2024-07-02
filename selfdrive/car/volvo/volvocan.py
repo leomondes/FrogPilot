@@ -112,6 +112,10 @@ def create_volvo_acc_spam_command(packer, controller, CS, slcSet, Vego, frogpilo
       slcSet = slcSet - 10 # 10 lower to increase deceleration until with 5
   else:
     slcSet = int(round((Vego + 5 * accel) * MS_CONVERT))
+  
+  if frogpilot_variables.is_metric: # Default is by 5 kph
+    slcSet = int(round(slcSet/5.0)*5.0)
+    speedSetPoint = int(round(speedSetPoint/5.0)*5.0)
 
   if slcSet < speedSetPoint and speedSetPoint > (32 if frogpilot_variables.is_metric else 20):
     cruiseBtn = Buttons.SET_MINUS

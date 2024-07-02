@@ -32,6 +32,7 @@ private:
   QMap<QString, QString> carModels;
 
   std::set<QString> gmKeys = {"LongPitch", "VoltSNG"};
+  std::set<QString> volvoKeys = {"CSLCEnabled"};
   std::set<QString> subaruKeys = {"CrosstrekTorque"};
   std::set<QString> toyotaKeys = {"ClusterOffset", "SNGHack", "ToyotaDoors", "ToyotaTune"};
 

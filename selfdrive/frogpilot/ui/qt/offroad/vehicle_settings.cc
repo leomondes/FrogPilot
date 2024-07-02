@@ -33,6 +33,7 @@ QStringList getCarNames(const QString &carMake, QMap<QString, QString> &carModel
   makeMap["tesla"] = "tesla";
   makeMap["toyota"] = "toyota";
   makeMap["volkswagen"] = "volkswagen";
+  makeMap["volvo"] = "volvo";
 
   QString targetFolder = makeMap.value(carMake, carMake);
   QFile file(QString("../car/%1/values.py").arg(targetFolder));
@@ -139,9 +140,8 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(SettingsWindow *parent) : FrogPil
   std::vector<std::tuple<QString, QString, QString, QString>> vehicleToggles {
     {"LongPitch", tr("Long Pitch Compensation"), tr("Smoothen out the gas and pedal controls."), ""},
     {"VoltSNG", tr("2017 Volt SNG"), tr("Enable the 'Stop and Go' hack for 2017 Chevy Volts."), ""},
-
+    {"CSLCEnabled", tr("CSLC"), tr("Set cars cruise speed based on SLC, MTSC, VTSC, & CEM.\n\nTurns OpenPilot Longitudnal Control off."), ""},
     {"CrosstrekTorque", tr("Subaru Crosstrek Torque Increase"), tr("Increases the maximum allowed torque for the Subaru Crosstrek."), ""},
-
     {"ToyotaDoors", tr("Automatically Lock/Unlock Doors"), tr("Automatically lock the doors when in drive and unlock when in park."), ""},
     {"ClusterOffset", tr("Cluster Offset"), tr("Set the cluster offset openpilot uses to try and match the speed displayed on the dash."), ""},
     {"SNGHack", tr("Stop and Go Hack"), tr("Enable the 'Stop and Go' hack for vehicles without stock stop and go functionality."), ""},
@@ -194,7 +194,7 @@ FrogPilotVehiclesPanel::FrogPilotVehiclesPanel(SettingsWindow *parent) : FrogPil
     });
   }
 
-  std::set<QString> rebootKeys = {"CrosstrekTorque"};
+  std::set<QString> rebootKeys = {"CrosstrekTorque","CSLCEnabled"};
   for (const QString &key : rebootKeys) {
     QObject::connect(static_cast<ToggleControl*>(toggles[key.toStdString().c_str()]), &ToggleControl::toggleFlipped, [this]() {
       if (started) {
@@ -272,6 +272,7 @@ void FrogPilotVehiclesPanel::hideToggles() {
   selectModelButton->setVisible(!carMake.isEmpty());
 
   bool gm = carMake == "Buick" || carMake == "Cadillac" || carMake == "Chevrolet" || carMake == "GM" || carMake == "GMC";
+  bool volvo = carMake == "Volvo";
   bool subaru = carMake == "Subaru";
   bool toyota = carMake == "Lexus" || carMake == "Toyota";
 
@@ -306,6 +307,8 @@ void FrogPilotVehiclesPanel::hideToggles() {
         toggle->setVisible(subaruKeys.find(key.c_str()) != subaruKeys.end());
       } else if (toyota) {
         toggle->setVisible(toyotaKeys.find(key.c_str()) != toyotaKeys.end());
+      } else if (volvo) {
+        toggle->setVisible(volvoKeys.find(key.c_str()) != volvoKeys.end());
       }
     }
   }

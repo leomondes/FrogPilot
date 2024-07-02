@@ -3,6 +3,7 @@ from enum import IntEnum
 
 from cereal import car
 from panda.python import uds
+from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.car import AngleRateLimit, CarSpecs, dbc_dict, DbcDict, PlatformConfig, Platforms
 from openpilot.selfdrive.car.docs_definitions import CarHarness, CarDocs, CarParts
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, p16
@@ -58,13 +59,9 @@ class CarControllerParams:
   ANGLE_RATE_LIMIT_UP = AngleRateLimit(speed_bp=[0., 8.33, 13.89, 19.44, 25., 30.55, 36.1], angle_v=[2., 1.2, .25, .20, .15, .10, .10])
   ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[0., 8.33, 13.89, 19.44, 25., 30.55, 36.1], angle_v=[2., 1.2, .25, .20, .15, .10, .10])
 
-  # number of 0 torque samples allowed in a row.
-  # Got one false trigger on motorway with 10.
-  # Increase to 12 is probably a good tradeoff between false triggers
-  # and detecting fault.
-  # Going above this threshold triggers steerFaultTemporary.
-  # *2 because carState runs in 100Hz.
-  N_ZERO_TRQ = 12*2
+  # Temporary steer fault timeout
+  # Maximum time to continuously read 0 torque from EPS
+  STEER_TIMEOUT = 30 / DT_CTRL
 
   # EUCD
   # When changing steer direction steering request need to be blocked.
@@ -91,18 +88,18 @@ class VolvoCarDocs(CarDocs):
   car_parts: CarParts = field(default_factory=CarParts.common([CarHarness.custom]))
 
 
-#@dataclass(frozen=True)
-#class VolvoCarSpecs(CarSpecs):
-#  steerRatio: float = 10.0
-#  centerToFrontRatio: float = 0.44
-#  minSteerSpeed: float = 1.0
+@dataclass(frozen=True)
+class VolvoCarSpecs(CarSpecs):
+#  steerRatio: float = 15.0
+  centerToFrontRatio: float = 0.44
+  minSteerSpeed: float = 1.0
 
 
 class CAR(Platforms):
   VOLVO_V60 = VolvoEUCDPlatformConfig(
     "VOLVO V60",
     [VolvoCarDocs("VOLVO V60 2015")],
-    CarSpecs(mass=1750, wheelbase=2.776, steerRatio=10.0),
+    CarSpecs(mass=1750, wheelbase=2.776, steerRatio=15.0),
   )
 
 

@@ -9,7 +9,7 @@ class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
     self.cruiseState_enabled_prev = False
-    self.count_zero_steeringTorque = 0
+    self.eps_torque_timer = 0
 
   def update(self, cp, cp_cam, frogpilot_variables):
     ret = car.CarState.new_message()
@@ -32,22 +32,7 @@ class CarState(CarStateBase):
     ret.steeringTorqueEps = cp.vl["PSCM1"]["LKATorque"]
     ret.steeringPressed = False  # TODO
 
-    # Check if servo stops responding when ACC is active
-    if ret.cruiseState.enabled and ret.vEgo > self.CP.minSteerSpeed:
-      # Reset counter on entry
-      if self.cruiseState_enabled_prev != ret.cruiseState.enabled:
-        self.count_zero_steeringTorque = 0
-
-      # Count up when no torque from servo detected
-      if ret.steeringTorque == 0:
-        self.count_zero_steeringTorque += 1
-      else:
-        self.count_zero_steeringTorque = 0
-
-      # Set fault if above threshold
-      ret.steerFaultTemporary = self.count_zero_steeringTorque >= 1000
-
-    # cruise state
+        # cruise state
     ret.cruiseState.speed = cp.vl["ACC_Speed"]["ACC_Speed"] * CV.KPH_TO_MS
     ret.cruiseState.available = cp_cam.vl["FSM0"]["ACCStatus"] in (2, 6, 7)
     ret.cruiseState.enabled = cp_cam.vl["FSM0"]["ACCStatus"] in (6, 7)
@@ -56,8 +41,35 @@ class CarState(CarStateBase):
     ret.accFaulted = False
     self.acc_distance = cp_cam.vl["FSM1"]["ACC_Distance"]
 
+    # Check if servo stops responding when ACC is active
+    if ret.cruiseState.enabled and ret.vEgo > self.CP.minSteerSpeed:
+      # Reset counter on entry
+      if not self.cruiseState_enabled_prev:
+        self.eps_torque_timer = 0
+
+      # Count up when no torque from servo detected
+      if ret.steeringTorqueEps == 0:
+        self.eps_torque_timer += 1
+      else:
+        self.eps_torque_timer = 0
+
+      # Set fault if above threshold
+      ret.steerFaultTemporary = self.eps_torque_timer >= CarControllerParams.STEER_TIMEOUT
+
+    self.cruiseState_enabled_prev = ret.cruiseState.enabled
+
     # gear
-    ret.gearShifter = car.CarState.GearShifter.drive  # TODO
+    #ret.gearShifter = car.CarState.GearShifter.drive  # TODO
+
+    # gear
+    # only consider P/N or R if state stays for 10 cycles
+    gear = cp.vl["Gear_Info"]["Gear"]
+    if gear == 50 and ret.vEgo > 15:
+      ret.gearShifter = car.CarState.GearShifter.park
+    elif gear == 44 and ret.vEgo < 3:
+      ret.gearShifter = car.CarState.GearShifter.reverse
+    else:
+      ret.gearShifter = car.CarState.GearShifter.drive
 
     # safety
     ret.stockFcw = False  # TODO
@@ -68,7 +80,7 @@ class CarState(CarStateBase):
     ret.rightBlinker = cp.vl["MiscCarInfo"]["TurnSignal"] == 3
 
     # lock info
-    ret.doorOpen = not(cp.vl["Doors"]["DriverDoorClosed"])
+    ret.doorOpen = not all([cp.vl["Doors"]["DriverDoorClosed"], cp.vl["Doors"]["PassengerDoorClosed"]])
     ret.seatbeltUnlatched = False  # TODO
 
     # Store info from servo message PSCM1
@@ -91,6 +103,7 @@ class CarState(CarStateBase):
       ("ACC_Speed", 50),
       ("MiscCarInfo", 25),
       ("Doors", 20),
+      ("Gear_Info", 50),
     ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)

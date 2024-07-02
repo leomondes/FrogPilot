@@ -1,3 +1,6 @@
+from openpilot.selfdrive.car.volvo.values import Buttons
+from openpilot.common.conversions import Conversions as CV
+
 def create_button_msg(packer, resume=False, cancel=False, bus=0):
   # TODO: validate
   msg = {
@@ -66,3 +69,58 @@ def create_lka_msg(packer, apply_steer: float, steer_direction: int):
   values["Checksum"] = calculate_lka_checksum(dat)
 
   return packer.make_can_msg("FSM2", 0, values)
+
+def create_button_cmd(packer, CP, counter, button):
+
+  can = int(button == Buttons.CANCEL)
+  res = int(button == Buttons.RESUME)
+  inc = int(button == Buttons.SET_PLUS)
+  dec = int(button == Buttons.SET_MINUS)
+
+  values = {
+    "ACCOnOffBtn": can,
+    "ACCOnOffBtnInv": (can + 1) % 2,
+
+    "ACCSetBtn": inc,
+    "ACCSetBtnInv": (inc + 1) % 2,
+
+    "ACCResumeBtn": res,
+    "ACCResumeBtnInv": (res + 1) % 2,
+
+    "ACCMinusBtn": dec,
+    "ACCMinusBtnInv": (dec + 1) % 2,
+
+    "TimeGapDecreaseBtn": 0,
+    "TimeGapDecreaseBtnInv": 1,
+
+    "TimeGapIncreaseBtn": 0,
+    "TimeGapIncreaseBtnInv": 1,
+    }
+
+  return packer.make_can_msg("CCButtons", 0, values)
+
+def create_volvo_acc_spam_command(packer, controller, CS, slcSet, Vego, frogpilot_variables, accel):
+  cruiseBtn = Buttons.NONE
+
+  MS_CONVERT = CV.MS_TO_KPH if frogpilot_variables.is_metric else CV.MS_TO_MPH
+
+  speedSetPoint = int(round(CS.out.cruiseState.speed * MS_CONVERT))
+  slcSet = int(round(slcSet * MS_CONVERT))
+
+  if not frogpilot_variables.experimentalMode:
+    if slcSet + 5 < Vego * MS_CONVERT:
+      slcSet = slcSet - 10 # 10 lower to increase deceleration until with 5
+  else:
+    slcSet = int(round((Vego + 5 * accel) * MS_CONVERT))
+
+  if slcSet < speedSetPoint and speedSetPoint > (32 if frogpilot_variables.is_metric else 20):
+    cruiseBtn = Buttons.SET_MINUS
+  elif slcSet > speedSetPoint:
+    cruiseBtn = Buttons.SET_PLUS
+  else:
+    cruiseBtn = Buttons.NONE
+
+  if (cruiseBtn != Buttons.NONE):
+    return [create_button_cmd(packer, controller.CP, controller.frame // 10, cruiseBtn)]
+  else:
+    return []

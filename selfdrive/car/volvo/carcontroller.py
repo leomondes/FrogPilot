@@ -1,10 +1,17 @@
+from cereal import car
 from opendbc.can.packer import CANPacker
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.car import apply_std_steer_angle_limits
 from openpilot.selfdrive.car.interfaces import CarControllerBase
 from openpilot.selfdrive.car.volvo import volvocan
-from openpilot.selfdrive.car.volvo.values import CarControllerParams, SteerDirection
+from openpilot.selfdrive.car.volvo.values import CarControllerParams, SteerDirection, Buttons
+from openpilot.common.params import Params
+from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
+from openpilot.common.conversions import Conversions as CV
 
+params_memory = Params("/dev/shm/params")
+
+VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
@@ -28,6 +35,13 @@ class CarController(CarControllerBase):
 
   def update(self, CC, CS, now_nanos, frogpilot_variables):
     can_sends = []
+
+    hud_control = CC.hudControl
+    hud_v_cruise = hud_control.setSpeed
+    if hud_v_cruise > 70:
+      hud_v_cruise = 0
+    actuators = CC.actuators
+    accel = actuators.accel
 
     actuators = CC.actuators
     pcm_cancel_cmd = CC.cruiseControl.cancel
@@ -96,9 +110,26 @@ class CarController(CarControllerBase):
       if self.waiting and (self.sng_count >= 5 or not CS.out.cruiseState.standstill):
         self.waiting = False
         self.last_resume_frame = self.frame
+    
+    # ACC Spam
+    if frogpilot_variables.CSLC:
+      if CC.enabled and self.frame % 10 == 0 and CS.cruise_buttons == Buttons.NONE and not CS.out.gasPressed and not CS.distance_button:
+        slcSet = get_set_speed(self, hud_v_cruise)
+        can_sends.extend(volvocan.create_volvo_acc_spam_command(self.packer, self, CS, slcSet, CS.out.vEgo, frogpilot_variables, accel))
 
     new_actuators = actuators.copy()
     new_actuators.steeringAngleDeg = self.apply_steer_prev
 
     self.frame += 1
     return new_actuators, can_sends
+  
+def get_set_speed(self, hud_v_cruise):
+  v_cruise = min(hud_v_cruise, V_CRUISE_MAX * CV.KPH_TO_MS)
+
+  v_cruise_slc: float = 0.
+  v_cruise_slc = params_memory.get_float("CSLCSpeed")
+
+  if v_cruise_slc > 0.:
+    v_cruise = v_cruise_slc
+
+  return v_cruise

@@ -102,6 +102,12 @@ class CAR(Platforms):
     CarSpecs(mass=1750, wheelbase=2.776, steerRatio=15.0),
   )
 
+class Buttons:
+  NONE = 0
+  SET_PLUS = 1
+  SET_MINUS = 2
+  RESUME = 3
+  CANCEL = 4
 
 VOLVO_VERSION_REQUEST = bytes([uds.SERVICE_TYPE.READ_DATA_BY_IDENTIFIER]) + \
   p16(0xf1a2)

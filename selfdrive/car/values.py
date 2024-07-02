@@ -15,6 +15,7 @@ from openpilot.selfdrive.car.volkswagen.values import CAR as VOLKSWAGEN
 from openpilot.selfdrive.car.volvo.values import CAR as VOLVO
 
 Platform = BODY | CHRYSLER | FORD | GM | HONDA | HYUNDAI | MAZDA | MOCK | NISSAN | SUBARU | TESLA | TOYOTA | VOLKSWAGEN | VOLVO
-BRANDS = get_args(Platform)
+#BRANDS = get_args(Platform)
+BRANDS = [BODY, CHRYSLER, FORD, GM, HONDA, HYUNDAI, MAZDA, MOCK, NISSAN, SUBARU, TESLA, TOYOTA, VOLKSWAGEN, VOLVO]
 
 PLATFORMS: dict[str, Platform] = {str(platform): platform for brand in BRANDS for platform in brand}

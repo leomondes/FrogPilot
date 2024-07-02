@@ -97,7 +97,6 @@ class VolvoCarSpecs(CarSpecs):
 
 class CAR(Platforms):
   VOLVO_V60 = VolvoEUCDPlatformConfig(
-    "VOLVO V60",
     [VolvoCarDocs("VOLVO V60 2015")],
     CarSpecs(mass=1750, wheelbase=2.776, steerRatio=15.0),
   )

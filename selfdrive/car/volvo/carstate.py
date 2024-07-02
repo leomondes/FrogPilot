@@ -59,14 +59,9 @@ class CarState(CarStateBase):
     self.cruiseState_enabled_prev = ret.cruiseState.enabled
 
     # gear
-    #ret.gearShifter = car.CarState.GearShifter.drive  # TODO
-
-    # gear
-    # only consider P/N or R if state stays for 10 cycles
+    # only check reverse
     gear = cp.vl["Gear_Info"]["Gear"]
-    if gear == 50 and ret.vEgo > 15:
-      ret.gearShifter = car.CarState.GearShifter.park
-    elif gear == 44 and ret.vEgo < 3:
+    if gear == 44 and ret.vEgo < 3:
       ret.gearShifter = car.CarState.GearShifter.reverse
     else:
       ret.gearShifter = car.CarState.GearShifter.drive

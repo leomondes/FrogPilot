@@ -43,11 +43,11 @@ def frogpilot_boot_functions(frogpilot_functions):
     print(f"Failed to backup toggles. Error: {e}")
     return
 
-  #try:
-    #delete_deprecated_models()
-  #except subprocess.CalledProcessError as e:
-    #print(f"Failed to delete deprecated models. Error: {e}")
-    #return
+  try:
+    delete_deprecated_models()
+  except subprocess.CalledProcessError as e:
+    print(f"Failed to delete deprecated models. Error: {e}")
+    return
 
 def manager_init(frogpilot_functions) -> None:
   frogpilot_boot = threading.Thread(target=frogpilot_boot_functions, args=(frogpilot_functions,))

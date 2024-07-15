@@ -99,7 +99,7 @@ def create_button_cmd(packer, CP, counter, button):
 
   return packer.make_can_msg("CCButtons", 0, values)
 
-def create_volvo_acc_spam_command(packer, controller, CS, slcSet, Vego, frogpilot_toggles, accel):
+def create_volvo_acc_spam_command(packer, controller, CS, slcSet, Vego, frogpilot_toggles, accel, experimentalMode):
   cruiseBtn = Buttons.NONE
 
   MS_CONVERT = CV.MS_TO_KPH if frogpilot_toggles.is_metric else CV.MS_TO_MPH
@@ -107,11 +107,11 @@ def create_volvo_acc_spam_command(packer, controller, CS, slcSet, Vego, frogpilo
   speedSetPoint = int(round(CS.out.cruiseState.speed * MS_CONVERT))
   slcSet = int(round(slcSet * MS_CONVERT))
 
-  #if not frogpilot_toggles.experimentalMode:
-  if slcSet + 5 < Vego * MS_CONVERT:
-    slcSet = slcSet - 10 # 10 lower to increase deceleration until with 5
-  #else:
-  #  slcSet = int(round((Vego + 5 * accel) * MS_CONVERT))
+  if not experimentalMode:
+    if slcSet + 5 < Vego * MS_CONVERT:
+      slcSet = slcSet - 10 # 10 lower to increase deceleration until with 5
+  else:
+    slcSet = int(round((Vego + 5 * accel) * MS_CONVERT))
   
   if frogpilot_toggles.is_metric: # Default is by 5 kph
     slcSet = int(round(slcSet/5.0)*5.0)
@@ -125,6 +125,6 @@ def create_volvo_acc_spam_command(packer, controller, CS, slcSet, Vego, frogpilo
     cruiseBtn = Buttons.NONE
 
   if (cruiseBtn != Buttons.NONE):
-    return [create_button_cmd(packer, controller.CP, controller.frame // 10, cruiseBtn)]
+    return [create_button_cmd(packer, controller.CP, controller.frame // 10, cruiseBtn)]*5
   else:
     return []

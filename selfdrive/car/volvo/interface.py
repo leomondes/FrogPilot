@@ -58,5 +58,5 @@ class CarInterface(CarInterfaceBase):
 
     return ret, fp_ret
 
-  def apply(self, c, now_nanos, frogpilot_toggles):
-    return self.CC.update(c, self.CS, now_nanos, frogpilot_toggles)
+  def apply(self, c, now_nanos, experimentalMode, frogpilot_toggles):
+    return self.CC.update(c, self.CS, now_nanos, experimentalMode, frogpilot_toggles)

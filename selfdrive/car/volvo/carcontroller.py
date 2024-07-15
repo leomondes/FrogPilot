@@ -33,7 +33,7 @@ class CarController(CarControllerBase):
     self.waiting = False
     self.sng_count = 0
 
-  def update(self, CC, CS, now_nanos, frogpilot_toggles):
+  def update(self, CC, CS, now_nanos, experimentalMode, frogpilot_toggles):
     can_sends = []
 
     hud_control = CC.hudControl
@@ -113,9 +113,9 @@ class CarController(CarControllerBase):
     
     # ACC Spam
     if frogpilot_toggles.CSLC:
-      if CC.enabled and self.frame % 10 == 0 and CS.cruise_buttons == Buttons.NONE and not CS.out.gasPressed and not CS.distance_button:
+      if CC.enabled and self.frame % 5 == 0 and CS.cruise_buttons == Buttons.NONE and not CS.out.gasPressed and not CS.distance_button:
         slcSet = get_set_speed(self, hud_v_cruise)
-        can_sends.extend(volvocan.create_volvo_acc_spam_command(self.packer, self, CS, slcSet, CS.out.vEgo, frogpilot_toggles, accel))
+        can_sends.extend(volvocan.create_volvo_acc_spam_command(self.packer, self, CS, slcSet, CS.out.vEgo, frogpilot_toggles, accel, experimentalMode))
 
     new_actuators = CC.actuators.as_builder()
     new_actuators.steeringAngleDeg = self.apply_steer_prev

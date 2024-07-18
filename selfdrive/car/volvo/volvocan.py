@@ -72,29 +72,29 @@ def create_lka_msg(packer, apply_steer: float, steer_direction: int):
 
 def create_button_cmd(packer, CP, counter, button):
 
-  can = int(button == Buttons.CANCEL)
-  res = int(button == Buttons.RESUME)
+  #can = int(button == Buttons.CANCEL)
+  #res = int(button == Buttons.RESUME)
   inc = int(button == Buttons.SET_PLUS)
   dec = int(button == Buttons.SET_MINUS)
 
   values = {
-    "ACCOnOffBtn": can,
-    "ACCOnOffBtnInv": (can + 1) % 2,
+    #"ACCOnOffBtn": can,
+    #"ACCOnOffBtnInv": (can + 1) % 2,
 
     "ACCSetBtn": inc,
     "ACCSetBtnInv": (inc + 1) % 2,
 
-    "ACCResumeBtn": res,
-    "ACCResumeBtnInv": (res + 1) % 2,
+    #"ACCResumeBtn": res,
+    #"ACCResumeBtnInv": (res + 1) % 2,
 
     "ACCMinusBtn": dec,
     "ACCMinusBtnInv": (dec + 1) % 2,
 
-    "TimeGapDecreaseBtn": 0,
-    "TimeGapDecreaseBtnInv": 1,
+    #"TimeGapDecreaseBtn": 0,
+    #"TimeGapDecreaseBtnInv": 1,
 
-    "TimeGapIncreaseBtn": 0,
-    "TimeGapIncreaseBtnInv": 1,
+    #"TimeGapIncreaseBtn": 0,
+    #"TimeGapIncreaseBtnInv": 1,
     }
 
   return packer.make_can_msg("CCButtons", 0, values)

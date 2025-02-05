@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+import numpy as np
+
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.numpy_fast import clip
 from openpilot.common.realtime import DT_MDL
 
 from openpilot.selfdrive.controls.controlsd import ButtonType
@@ -72,7 +73,7 @@ class FrogPilotVCruise:
     if frogpilot_toggles.map_turn_speed_controller and v_ego > CRUISING_SPEED and carControl.longActive:
       mtsc_active = self.mtsc_target < v_cruise
       mtsc_speed = ((TARGET_LAT_A * frogpilot_toggles.turn_aggressiveness) / (self.mtsc.get_map_curvature(v_ego) * frogpilot_toggles.curve_sensitivity))**0.5
-      self.mtsc_target = clip(mtsc_speed, CRUISING_SPEED, v_cruise)
+      self.mtsc_target = np.clip(mtsc_speed, CRUISING_SPEED, v_cruise)
 
       if self.frogpilot_planner.road_curvature_detected and mtsc_active:
         self.mtsc_target = self.frogpilot_planner.v_cruise
@@ -115,7 +116,7 @@ class FrogPilotVCruise:
           if frogpilot_toggles.speed_limit_controller_override_manual:
             if carState.gasPressed:
               self.overridden_speed = v_ego_cluster
-            self.overridden_speed = clip(self.overridden_speed, self.slc_target + self.slc_offset, v_cruise_cluster)
+            self.overridden_speed = np.clip(self.overridden_speed, self.slc_target + self.slc_offset, v_cruise_cluster)
           elif frogpilot_toggles.speed_limit_controller_override_set_speed:
             self.overridden_speed = v_cruise_cluster
         else:
@@ -132,7 +133,7 @@ class FrogPilotVCruise:
     # Pfeiferj's Vision Turn Controller
     if frogpilot_toggles.vision_turn_speed_controller and carControl.longActive and self.frogpilot_planner.road_curvature_detected:
       self.vtsc_target = ((TARGET_LAT_A * frogpilot_toggles.turn_aggressiveness) / (self.frogpilot_planner.road_curvature * frogpilot_toggles.curve_sensitivity))**0.5
-      self.vtsc_target = clip(self.vtsc_target, CRUISING_SPEED, v_cruise)
+      self.vtsc_target = np.clip(self.vtsc_target, CRUISING_SPEED, v_cruise)
     else:
       self.vtsc_target = v_cruise if v_cruise != V_CRUISE_UNSET else 0
 
@@ -159,8 +160,8 @@ class FrogPilotVCruise:
         targets = [self.mtsc_target, self.stsc_target, self.vtsc_target]
       v_cruise = float(min([target if target > CRUISING_SPEED else v_cruise for target in targets]))
 
-    self.mtsc_target = clip(self.mtsc_target, self.mtsc_target + v_cruise_diff, v_cruise)
-    self.stsc_target = clip(self.stsc_target, self.mtsc_target + v_cruise_diff, v_cruise)
-    self.vtsc_target = clip(self.vtsc_target, self.mtsc_target + v_cruise_diff, v_cruise)
+    self.mtsc_target = np.clip(self.mtsc_target, self.mtsc_target + v_cruise_diff, v_cruise)
+    self.stsc_target = np.clip(self.stsc_target, self.mtsc_target + v_cruise_diff, v_cruise)
+    self.vtsc_target = np.clip(self.vtsc_target, self.mtsc_target + v_cruise_diff, v_cruise)
 
     return v_cruise

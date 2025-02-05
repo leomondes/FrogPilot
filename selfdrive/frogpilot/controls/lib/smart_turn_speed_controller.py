@@ -6,7 +6,6 @@ import numpy as np
 from sortedcontainers import SortedDict
 
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.numpy_fast import clip
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX
 
@@ -36,7 +35,7 @@ class SmartTurnSpeedController:
 
     road_curvature = round(self.frogpilot_planner.road_curvature, ROUNDING_PRECISION)
     closest_entry = min(self.cached_entries, key=lambda x: abs(x[0] - road_curvature))
-    return clip((closest_entry[1] / closest_entry[0])**0.5, CRUISING_SPEED, v_cruise)
+    return np.clip((closest_entry[1] / closest_entry[0])**0.5, CRUISING_SPEED, v_cruise)
 
   def update_cache(self, v_ego):
     if not self.data:
@@ -83,10 +82,9 @@ class SmartTurnSpeedController:
               lower_curves = np.mean(lower_data, axis=0)
               upper_curves = np.mean(upper_data, axis=0)
 
-          interpolated = [lower_curves + ratio * (upper_curves - lower_curves)]
-          if interpolated is not None:
-            data[speed] = interpolated
-            speeds_in_range.append(speed)
+              interpolated = [lower_curves + ratio * (upper_curves - lower_curves)]
+              data[speed] = interpolated
+              speeds_in_range.append(speed)
 
       sorted_speeds = sorted(speeds_in_range)
       self.cached_entries = np.vstack([data[speed] for speed in sorted_speeds])

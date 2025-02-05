@@ -11,7 +11,7 @@ from pathlib import Path
 
 from openpilot.selfdrive.frogpilot.assets.download_functions import GITLAB_URL, download_file, get_repository_url, handle_error, handle_request_error, verify_download
 from openpilot.selfdrive.frogpilot.frogpilot_utilities import delete_file
-from openpilot.selfdrive.frogpilot.frogpilot_variables import DEFAULT_CLASSIC_MODEL, DEFAULT_MLSIM_MODEL, DEFAULT_MODEL, MODELS_PATH, params, params_memory
+from openpilot.selfdrive.frogpilot.frogpilot_variables import DEFAULT_CLASSIC_MODEL, DEFAULT_MODEL, DEFAULT_TINYGRAD_MODEL, MODELS_PATH, params, params_memory
 
 VERSION = "v13"
 
@@ -128,7 +128,7 @@ class ModelManager:
       shutil.copyfile(source_path, default_model_path)
       print(f"Copied the default model from {source_path} to {default_model_path}")
 
-    mlsim_default_model_path = MODELS_PATH / f"{DEFAULT_MLSIM_MODEL}.pkl"
+    mlsim_default_model_path = MODELS_PATH / f"{DEFAULT_TINYGRAD_MODEL}.pkl"
     source_path = Path(__file__).parents[2] / "tinygrad_modeld/models/supercombo_tinygrad.pkl"
     if source_path.is_file() and not mlsim_default_model_path.is_file():
       shutil.copyfile(source_path, mlsim_default_model_path)

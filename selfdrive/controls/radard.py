@@ -117,22 +117,19 @@ class Track:
     if standstill or self.vLead < 1:
       return False
 
+    lead_position = self.yRel + interp(self.dRel, model_data.position.x, model_data.position.y)
+
+    near_lane_index = 1 if left else 2
+    far_lane_index = 0 if left else 3
+
     if far:
-      near_lane_index = 0 if left else 3
+      lane_position = interp(self.dRel, model_data.laneLines[far_lane_index].x, model_data.laneLines[far_lane_index].y)
 
-      lane_position = interp(self.dRel, model_data.laneLines[near_lane_index].x, model_data.laneLines[near_lane_index].y)
+      return lead_position < lane_position if left else lead_position > lane_position
     else:
-      near_lane_index = 1 if left else 2
-      far_lane_index = 0 if left else 3
-
       near_lane = interp(self.dRel, model_data.laneLines[near_lane_index].x, model_data.laneLines[near_lane_index].y)
       far_lane = interp(self.dRel, model_data.laneLines[far_lane_index].x, model_data.laneLines[far_lane_index].y)
 
-    lead_position = self.yRel + interp(self.dRel, model_data.position.x, model_data.position.y)
-
-    if far:
-      return lead_position < lane_position if left else lead_position > lane_position
-    else:
       return min(near_lane, far_lane) < lead_position < max(near_lane, far_lane)
 
   def potential_far_lead(self, model_data: capnp._DynamicStructReader, standstill: bool):

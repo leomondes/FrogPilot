@@ -27,11 +27,7 @@ def update_theme_asset(asset_type, theme, holiday_theme):
     asset_location = THEME_SAVE_PATH / "theme_packs" / theme / asset_type
 
   if not asset_location.exists() or theme == "stock":
-    if asset_type == "colors":
-      params.put_bool("UseStockColors", True)
-      print("Using the stock color scheme instead")
-      return
-    elif (STOCKOP_THEME_PATH / asset_type).is_dir():
+    if (STOCKOP_THEME_PATH / asset_type).is_dir():
       asset_location = STOCKOP_THEME_PATH / asset_type
       print(f"Using the stock {asset_type[:-1]} instead")
     else:
@@ -42,8 +38,6 @@ def update_theme_asset(asset_type, theme, holiday_theme):
           shutil.rmtree(save_location)
       print(f"Using the stock {asset_type[:-1]} instead")
       return
-  elif asset_type == "colors":
-    params.put_bool("UseStockColors", False)
 
   if save_location.exists() or save_location.is_symlink():
     if save_location.is_symlink() or save_location.is_file():

@@ -31,7 +31,6 @@ locks = {
   "download_theme": threading.Lock(),
   "flash_panda": threading.Lock(),
   "lock_doors": threading.Lock(),
-  "send_sentry_reports": threading.Lock(),
   "update_checks": threading.Lock(),
   "update_maps": threading.Lock(),
   "update_models": threading.Lock(),
@@ -173,17 +172,6 @@ def run_cmd(cmd, success_message, fail_message):
     print(f"Unexpected error occurred: {error}")
     print(fail_message)
     sentry.capture_exception(error)
-
-def send_sentry_reports(frogpilot_toggles, frogpilot_variables, params, params_tracking):
-  if params.get_bool("UserLogged"):
-    return
-
-  while not is_url_pingable("https://sentry.io"):
-    time.sleep(1)
-
-  sentry.capture_user_report(frogpilot_variables.short_branch, frogpilot_toggles, params, params_tracking)
-
-  params.put_bool("UserLogged", True)
 
 def update_maps(now):
   while not MAPD_PATH.exists():

@@ -7,7 +7,7 @@ from openpilot.selfdrive.controls.controlsd import Desire
 from openpilot.selfdrive.controls.lib.events import EventName, Events
 
 from openpilot.selfdrive.frogpilot.assets.theme_manager import update_wheel_image
-from openpilot.selfdrive.frogpilot.frogpilot_variables import CRUISING_SPEED, params, params_memory
+from openpilot.selfdrive.frogpilot.frogpilot_variables import CRUISING_SPEED, NON_DRIVING_GEARS, params, params_memory
 
 RANDOM_EVENTS_CHANCE = 0.01 * DT_MDL
 
@@ -54,7 +54,7 @@ class FrogPilotEvents:
     if self.frogpilot_planner.frogpilot_vcruise.forcing_stop:
       self.events.add(EventName.forcingStop)
 
-    if frogpilot_toggles.green_light_alert and not self.frogpilot_planner.tracking_lead and carState.standstill:
+    if frogpilot_toggles.green_light_alert and not self.frogpilot_planner.tracking_lead and carState.standstill and carState.gearShifter not in NON_DRIVING_GEARS:
       if not self.frogpilot_planner.model_stopped and self.stopped_for_light:
         self.events.add(EventName.greenLight)
       self.stopped_for_light = self.frogpilot_planner.cem.stop_light_detected
@@ -67,7 +67,7 @@ class FrogPilotEvents:
         self.holiday_theme_played = True
       self.holiday_theme_frame += DT_MDL
 
-    if frogpilot_toggles.lead_departing_alert and self.frogpilot_planner.tracking_lead and carState.standstill:
+    if frogpilot_toggles.lead_departing_alert and self.frogpilot_planner.tracking_lead and carState.standstill and carState.gearShifter not in NON_DRIVING_GEARS:
       if self.tracking_lead_distance == 0:
         self.tracking_lead_distance = lead_distance
 

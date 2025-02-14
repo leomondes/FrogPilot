@@ -294,7 +294,9 @@ class CarInterface(CarInterfaceBase):
       ret.openpilotLongitudinalControl = not disable_openpilot_long
       ret.pcmCruise = False
 
-      if ret.enableGasInterceptor or candidate != CAR.CHEVROLET_BOLT_CC:
+      ret.stoppingDecelRate = 11.18  # == 25 mph/s (.04 rate)
+
+      if candidate != CAR.CHEVROLET_BOLT_CC:
         ret.longitudinalTuning.kiBP = [10.7, 10.8, 28.]
         ret.longitudinalTuning.kiV = [0., 20., 20.]  # set lower end to 0 since we can't drive below that speed
       else:
@@ -306,8 +308,6 @@ class CarInterface(CarInterfaceBase):
         ret.longitudinalTuning.kpV = [0., 20., 20.]  # set lower end to 0 since we can't drive below that speed
         ret.longitudinalTuning.kiBP = [0.]
         ret.longitudinalTuning.kiV = [0.1]
-
-      ret.stoppingDecelRate = 11.18  # == 25 mph/s (.04 rate)
 
     if candidate in CC_ONLY_CAR:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_GM_NO_ACC

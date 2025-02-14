@@ -20,7 +20,7 @@ jobs:
           ref: ${{ env.SOURCE_BRANCH }}
           fetch-depth: 0
 
-      - name: Identify Parent Commit from 'Compile FrogPilot'
+      - name: Identify the 'Compile FrogPilot' commit
         id: find_parent
         run: |
           set -e
@@ -36,8 +36,10 @@ jobs:
             exit 1
           fi
 
+          echo "Compile commit: $COMMIT"
           echo "Parent commit: $PARENT"
           echo "parent_commit=$PARENT" >> "$GITHUB_OUTPUT"
+          echo "compile_commit=$COMMIT" >> "$GITHUB_OUTPUT"
 
       - name: Checkout MAKE-PRS-HERE Branch
         run: |
@@ -53,6 +55,13 @@ jobs:
 
           PARENT_COMMIT=${{ steps.find_parent.outputs.parent_commit }}
           git checkout $PARENT_COMMIT -- .
+
+          COMPILE_COMMIT=${{ steps.find_parent.outputs.compile_commit }}
+          SOURCE_HEAD=$(git rev-parse origin/${{ env.SOURCE_BRANCH }})
+          if [ "$COMPILE_COMMIT" != "$SOURCE_HEAD" ]; then
+            echo "Applying changes from commits after the compile commit..."
+            git cherry-pick --no-commit ${COMPILE_COMMIT}..$SOURCE_HEAD
+          fi
           git add --all
 
       - name: Set Git Username and Email

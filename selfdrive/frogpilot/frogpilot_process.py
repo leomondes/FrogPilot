@@ -11,14 +11,13 @@ from cereal import messaging
 from openpilot.common.params import Params
 from openpilot.common.realtime import Priority, config_realtime_process
 from openpilot.common.time import system_time_valid
-from openpilot.system.hardware import HARDWARE
 
 from openpilot.selfdrive.frogpilot.assets.model_manager import ModelManager, MODEL_DOWNLOAD_PARAM
 from openpilot.selfdrive.frogpilot.assets.theme_manager import ThemeManager
 from openpilot.selfdrive.frogpilot.controls.frogpilot_planner import FrogPilotPlanner
 from openpilot.selfdrive.frogpilot.controls.lib.frogpilot_tracking import FrogPilotTracking
 from openpilot.selfdrive.frogpilot.frogpilot_functions import backup_toggles
-from openpilot.selfdrive.frogpilot.frogpilot_utilities import flash_panda, is_url_pingable, lock_doors, run_thread_with_lock, send_sentry_reports, update_maps, update_openpilot
+from openpilot.selfdrive.frogpilot.frogpilot_utilities import flash_panda, is_url_pingable, lock_doors, run_thread_with_lock, update_maps, update_openpilot
 from openpilot.selfdrive.frogpilot.frogpilot_variables import CRASHES_DIR, FrogPilotVariables, get_frogpilot_toggles, params, params_memory
 
 def assets_checks(model_manager, theme_manager):
@@ -125,8 +124,6 @@ def frogpilot_thread():
       if frogpilot_toggles.lock_doors_timer != 0:
         run_thread_with_lock("lock_doors", lock_doors, (frogpilot_toggles.lock_doors_timer, sm))
     elif started and not started_previously:
-      run_thread_with_lock("send_sentry_reports", send_sentry_reports, (frogpilot_toggles, frogpilot_variables, params, frogpilot_tracking.params_tracking))
-
       radarless_model = frogpilot_toggles.radarless_model
 
       if error_log.is_file():

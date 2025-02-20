@@ -71,7 +71,7 @@ class CarControllerParams:
   # When close to desired steering angle, don't change steer direction inside deadzone.
   # Since we need to release control of the steering wheel for a brief moment, steering wheel will
   # unwind by itself.
-  DEADZONE = 0.1
+  DEADZONE = 0.2
 
   def __init__(self, CP):
     pass

@@ -9,8 +9,8 @@ from openpilot.selfdrive.car.volvo.values import CarControllerParams, SteerDirec
 class CarController(CarControllerBase):
   def __init__(self, dbc_name, CP, VM):
     self.CP = CP
-    self.packer = CANPacker(dbc_name)
-    self.frame = 0
+    self.CCP = CarControllerParams(CP)
+    self.packer_pt = CANPacker(dbc_names[Bus.pt])
 
     self.apply_steer_prev = 0
     self.apply_steer_dir_prev = SteerDirection.NONE
